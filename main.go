@@ -4,5 +4,5 @@ import "fmt"
 
 // 测试github push
 func main() {
-	fmt.Println("Hello gohub")
+	fmt.Println("Hello huxxa")
 }
