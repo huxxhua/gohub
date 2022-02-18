@@ -12,11 +12,11 @@ import (
 // viper 库实例
 var viper *viperlib.Viper
 
-// ConfigFunc 动态加载配置信息
-type ConfigFunc func() map[string]interface{}
+// Func 动态加载配置信息
+type Func func() map[string]interface{}
 
-// ConfigFuncs 先加载到此数组，loadConfig 再动态生成配置信息
-var ConfigFuncs map[string]ConfigFunc
+// Funcs 先加载到此数组，loadConfig 再动态生成配置信息
+var Funcs map[string]Func
 
 func init() {
 
@@ -31,7 +31,12 @@ func init() {
 	// 5. 读取环境变量（支持 flags）
 	viper.AutomaticEnv()
 
-	ConfigFuncs = make(map[string]ConfigFunc)
+	Funcs = make(map[string]Func)
+}
+
+// Add 新增配置项
+func Add(name string, configFn Func) {
+	Funcs[name] = configFn
 }
 
 // InitConfig 初始化配置信息，完成对环境变量以及 config 信息的加载
@@ -40,12 +45,6 @@ func InitConfig(env string) {
 	loadEnv(env)
 	// 2. 注册配置信息
 	loadConfig()
-}
-
-func loadConfig() {
-	for name, fn := range ConfigFuncs {
-		viper.Set(name, fn())
-	}
 }
 
 func loadEnv(envSuffix string) {
@@ -70,17 +69,18 @@ func loadEnv(envSuffix string) {
 	viper.WatchConfig()
 }
 
+func loadConfig() {
+	for name, fn := range Funcs {
+		viper.Set(name, fn())
+	}
+}
+
 // Env 读取环境变量，支持默认值
 func Env(envName string, defaultValue ...interface{}) interface{} {
 	if len(defaultValue) > 0 {
 		return internalGet(envName, defaultValue[0])
 	}
 	return internalGet(envName)
-}
-
-// Add 新增配置项
-func Add(name string, configFn ConfigFunc) {
-	ConfigFuncs[name] = configFn
 }
 
 // Get 获取配置项
