@@ -24,6 +24,9 @@ func main() {
 
 	config.InitConfig(env)
 
+	// 初始化 Logger
+	bootstrap.SetupLogger()
+
 	// new 一个Gin Engine 实例
 	r := gin.New()
 
