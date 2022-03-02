@@ -2,11 +2,12 @@
 package captcha
 
 import (
-	"github.com/mojocn/base64Captcha"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
 	"gohub/pkg/redis"
 	"sync"
+
+	"github.com/mojocn/base64Captcha"
 )
 
 type Captcha struct {
@@ -59,7 +60,6 @@ func (c *Captcha) VerifyCaptcha(id string, answer string) (match bool) {
 	if !app.IsProduction() && id == config.GetString("captcha.testing_key") {
 		return true
 	}
-
 	// 第三个参数是验证后是否删除，我们选择 false
 	// 这样方便用户多次提交，防止表单提交错误需要多次输入图片验证码
 	return c.Base64Captcha.Verify(id, answer, false)

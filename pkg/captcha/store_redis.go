@@ -18,10 +18,12 @@ type RedisStore struct {
 func (s *RedisStore) Set(key string, value string) error {
 
 	ExpireTime := time.Minute * time.Duration(config.GetInt64("captcha.expire_time"))
+	// 方便本地开发调试
 	if app.IsLocal() {
 		ExpireTime = time.Minute * time.Duration(config.GetInt64("captcha.debug_expire_time"))
 	}
-	if ok := s.RedisClient.Set(key, value, ExpireTime); !ok {
+
+	if ok := s.RedisClient.Set(s.KeyPrefix+key, value, ExpireTime); !ok {
 		return errors.New("无法存储图片验证码答案")
 	}
 	return nil
@@ -38,7 +40,7 @@ func (s *RedisStore) Get(key string, clear bool) string {
 }
 
 // Verify 实现 base64Captcha.Store interface 的 Verify 方法
-func (s RedisStore) Verify(key, answer string, clear bool) bool {
+func (s *RedisStore) Verify(key, answer string, clear bool) bool {
 	v := s.Get(key, clear)
 	return v == answer
 }
