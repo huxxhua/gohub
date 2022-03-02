@@ -11,8 +11,8 @@ import (
 
 // RedisClient Redis 服务
 type RedisClient struct {
-	Clint   *redis.Client
-	Content context.Context
+	Client  *redis.Client
+	Context context.Context
 }
 
 // once 确保全局的 Redis 对象只实例一次
@@ -34,10 +34,10 @@ func NewClient(address string, username string, password string, db int) *RedisC
 	// 初始化自定的 RedisClient 实例
 	rds := &RedisClient{}
 	// 使用默认的 context
-	rds.Content = context.Background()
+	rds.Context = context.Background()
 
 	// 使用 redis 库里的 NewClient 初始化操作
-	redis.NewClient(&redis.Options{
+	rds.Client = redis.NewClient(&redis.Options{
 		Addr:     address,
 		Username: username,
 		Password: password,
@@ -53,14 +53,13 @@ func NewClient(address string, username string, password string, db int) *RedisC
 
 // Ping 用以测试 redis 连接是否正常
 func (rds RedisClient) Ping() error {
-	_, err := rds.Clint.Ping(rds.Content).Result()
-
+	_, err := rds.Client.Ping(rds.Context).Result()
 	return err
 }
 
 // Set 存储 key 对应的 value，且设置 expiration 过期时间
 func (rds RedisClient) Set(key string, value interface{}, expiration time.Duration) bool {
-	if err := rds.Clint.Set(rds.Content, key, value, expiration).Err(); err != nil {
+	if err := rds.Client.Set(rds.Context, key, value, expiration).Err(); err != nil {
 		logger.ErrorString("Redis", "Set", err.Error())
 		return false
 	}
@@ -69,7 +68,7 @@ func (rds RedisClient) Set(key string, value interface{}, expiration time.Durati
 
 // Get 获取 key 对应的 value
 func (rds RedisClient) Get(key string) string {
-	res, err := rds.Clint.Get(rds.Content, key).Result()
+	res, err := rds.Client.Get(rds.Context, key).Result()
 	if err != nil {
 		if err != redis.Nil {
 			logger.ErrorString("Redis", "Get", err.Error())
@@ -81,7 +80,7 @@ func (rds RedisClient) Get(key string) string {
 
 // Has 判断一个 key 是否存在，内部错误和 redis.Nil 都返回 false
 func (rds RedisClient) Has(key string) bool {
-	_, err := rds.Clint.Get(rds.Content, key).Result()
+	_, err := rds.Client.Get(rds.Context, key).Result()
 	if err != nil {
 		if err != redis.Nil {
 			logger.ErrorString("Redis", "Get", err.Error())
@@ -93,7 +92,7 @@ func (rds RedisClient) Has(key string) bool {
 
 // Del 删除存储在 redis 里的数据，支持多个 key 传参
 func (rds RedisClient) Del(key ...string) bool {
-	if err := rds.Clint.Del(rds.Content, key...).Err(); err != nil {
+	if err := rds.Client.Del(rds.Context, key...).Err(); err != nil {
 		logger.ErrorString("Redis", "Del", err.Error())
 		return false
 	}
@@ -102,7 +101,7 @@ func (rds RedisClient) Del(key ...string) bool {
 
 // FlushDB 清空当前 redis db 里的所有数据
 func (rds RedisClient) FlushDB() bool {
-	if err := rds.Clint.FlushDB(rds.Content).Err(); err != nil {
+	if err := rds.Client.FlushDB(rds.Context).Err(); err != nil {
 		logger.ErrorString("Redis", "FlushDB", err.Error())
 		return false
 	}
@@ -115,7 +114,7 @@ func (rds RedisClient) Increment(keys ...interface{}) bool {
 	switch len(keys) {
 	case 1:
 		key := keys[0].(string)
-		if err := rds.Clint.Incr(rds.Content, key).Err(); err != nil {
+		if err := rds.Client.Incr(rds.Context, key).Err(); err != nil {
 			logger.ErrorString("Redis", "Increment", err.Error())
 			return false
 		}
@@ -123,7 +122,7 @@ func (rds RedisClient) Increment(keys ...interface{}) bool {
 		key := keys[0].(string)
 		val := keys[1].(int64)
 
-		if err := rds.Clint.IncrBy(rds.Content, key, val).Err(); err != nil {
+		if err := rds.Client.IncrBy(rds.Context, key, val).Err(); err != nil {
 			logger.ErrorString("Redis", "Increment", err.Error())
 			return false
 		}
@@ -140,14 +139,14 @@ func (rds RedisClient) Decrement(keys ...interface{}) bool {
 	switch len(keys) {
 	case 1:
 		key := keys[0].(string)
-		if err := rds.Clint.Decr(rds.Content, key).Err(); err != nil {
+		if err := rds.Client.Decr(rds.Context, key).Err(); err != nil {
 			logger.ErrorString("Redis", "Decrement", err.Error())
 			return false
 		}
 	case 2:
 		key := keys[0].(string)
 		val := keys[1].(int64)
-		if err := rds.Clint.DecrBy(rds.Content, key, val).Err(); err != nil {
+		if err := rds.Client.DecrBy(rds.Context, key, val).Err(); err != nil {
 			logger.ErrorString("Redis", "Decrement", err.Error())
 			return false
 		}
