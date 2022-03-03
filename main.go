@@ -3,11 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"gohub/bootstrap"
 	config2 "gohub/config"
 	"gohub/pkg/config"
-
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -44,6 +43,7 @@ func main() {
 
 	// 初始化路由绑定
 	bootstrap.SetupRoute(r)
+
 	// 运行服务
 	err := r.Run(":" + config.Get("app.port"))
 	if err != nil {
