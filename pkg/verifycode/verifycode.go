@@ -2,10 +2,12 @@
 package verifycode
 
 import (
+	"fmt"
 	"gohub/pkg/app"
 	"gohub/pkg/config"
 	"gohub/pkg/helpers"
 	"gohub/pkg/logger"
+	"gohub/pkg/mail"
 	"gohub/pkg/redis"
 	"gohub/pkg/sms"
 	"strings"
@@ -82,4 +84,31 @@ func (vc *VerifyCode) generateVerifyCode(key string) string {
 	vc.Store.Set(key, code)
 
 	return code
+}
+
+// SendEmail 发送邮件验证码，调用示例：
+func (vc *VerifyCode) SendEmail(email string) error {
+
+	// 生成验证码
+	code := vc.generateVerifyCode(email)
+
+	// 方便本地和 API 自动测试
+	if !app.IsProduction() && strings.HasPrefix(email, config.GetString("verifycode.debug_email_suffix")) {
+		return nil
+	}
+
+	// 发送邮件
+	content := fmt.Sprintf("<h1>您的 Email 验证码是 %v </h1>", code)
+
+	mail.NewMailer().Send(mail.Email{
+		From: mail.Form{
+			Address: config.GetString("mail.from.address"),
+			Name:    config.GetString("mail.from.name"),
+		},
+		To:      []string{email},
+		Subject: "Email 验证码",
+		HTML:    []byte(content),
+	})
+
+	return nil
 }
