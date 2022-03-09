@@ -24,7 +24,9 @@ func RegisterAPIRoutes(r *gin.Engine) {
 			authGroup.POST("/signup/phone/exist", suc.IsPhoneExist)
 			authGroup.POST("/signup/email/exist", suc.IsEmailExist)
 
+			// 使用手机注册
 			authGroup.POST("/signup/using-phone", suc.SignupUsingPhone)
+			// 使用邮箱注册
 			authGroup.POST("/signup/using-email", suc.SignupUsingEmail)
 
 			// 发送验证码
@@ -33,6 +35,10 @@ func RegisterAPIRoutes(r *gin.Engine) {
 			authGroup.POST("/verify-codes/captcha", vcc.ShowCaptcha)
 			authGroup.POST("/verify-codes/phone", vcc.SendUsingPhone)
 			authGroup.POST("/verify-codes/email", vcc.SendUsingEmail)
+
+			lgc := new(auth.LoginController)
+			// 使用手机号，短信验证码进行登录
+			authGroup.POST("/login/using-phone", lgc.LoginByPhone)
 		}
 	}
 }
