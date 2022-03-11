@@ -188,7 +188,7 @@ func (j *JWT) getTokenFromHeader(ctx *gin.Context) (string, error) {
 	}
 	// 按空格分割
 	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) == 2 && parts[0] == "Bearer" {
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
 		return "", ErrHeaderMalformed
 	}
 

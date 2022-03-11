@@ -40,7 +40,7 @@ func (c *LoginController) LoginByPhone(ctx *gin.Context) {
 }
 
 // LoginByPassword 多种方法登录，支持手机号、email 和用户名
-func (c LoginController) LoginByPassword(ctx *gin.Context) {
+func (c *LoginController) LoginByPassword(ctx *gin.Context) {
 
 	//1. 验证表单
 	request := requests.LoginByPasswordRequest{}
@@ -58,4 +58,17 @@ func (c LoginController) LoginByPassword(ctx *gin.Context) {
 			"token": toke,
 		})
 	}
+}
+
+// RefreshToken 刷新 Access Token
+func (c *LoginController) RefreshToken(ctx *gin.Context) {
+	token, err := jwt.NewJWT().RefreshToken(ctx)
+	if err != nil {
+		response.Error(ctx, err, "令牌刷新失败")
+	} else {
+		response.JSON(ctx, gin.H{
+			"token": token,
+		})
+	}
+
 }
