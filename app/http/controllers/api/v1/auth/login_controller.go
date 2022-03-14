@@ -51,7 +51,7 @@ func (c *LoginController) LoginByPassword(ctx *gin.Context) {
 	// 2. 尝试登录
 	userModel, err := auth.Attempt(request.LoginID, request.Password)
 	if err != nil {
-		response.Error(ctx, err, "登录失败")
+		response.Unauthorized(ctx, "登录失败")
 	} else {
 		toke := jwt.NewJWT().IssueToken(userModel.GetStringID(), userModel.Name)
 		response.JSON(ctx, gin.H{

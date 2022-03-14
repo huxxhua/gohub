@@ -46,6 +46,7 @@ func RegisterAPIRoutes(r *gin.Engine) {
 			// 重置密码
 			pc := new(auth.PasswordController)
 			authGroup.POST("/password-reset/using-phone", pc.ResetByPhone)
+			authGroup.POST("/password-reset/using-email", pc.ResetByEmail)
 		}
 	}
 }
