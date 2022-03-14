@@ -83,13 +83,13 @@ func Error(c *gin.Context, err error, msg ...string) {
 
 	// error 类型为『数据库未找到内容』
 	if err == gorm.ErrRecordNotFound {
-		Abort404(c, msg...)
+		Abort404(c)
 		return
 	}
 
 	c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{
 		"message": defaultMessage("请求处理失败，请查看 error 的值", msg...),
-		"error":   err,
+		"error":   err.Error(),
 	})
 }
 

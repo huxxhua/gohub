@@ -4,6 +4,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"gohub/app/http/controllers/api/v1/auth"
+	"gohub/app/http/middlewares"
 	"net/http"
 )
 
@@ -11,6 +12,11 @@ func RegisterAPIRoutes(r *gin.Engine) {
 
 	// v1版本路由
 	v1 := r.Group("v1")
+
+	// 全局限流中间件：每小时限流。这里是所有 API （根据 IP）请求加起来。
+	// 作为参考 Github API 每小时最多 60 个请求（根据 IP）。
+	// 测试时，可以调高一点。
+	v1.Use(middlewares.LimitIP("200-H"))
 	{
 		v1.GET("/", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
@@ -19,34 +25,37 @@ func RegisterAPIRoutes(r *gin.Engine) {
 		})
 
 		authGroup := v1.Group("/auth")
+
+		// 限流中间件：每小时限流，作为参考 Github API 每小时最多 60 个请求（根据 IP）
+		// 测试时，可以调高一点
+		authGroup.Use(middlewares.LimitIP("1000-H"))
 		{
-			suc := new(auth.SignupController)
-			authGroup.POST("/signup/phone/exist", suc.IsPhoneExist)
-			authGroup.POST("/signup/email/exist", suc.IsEmailExist)
-
-			// 使用手机注册
-			authGroup.POST("/signup/using-phone", suc.SignupUsingPhone)
-			// 使用邮箱注册
-			authGroup.POST("/signup/using-email", suc.SignupUsingEmail)
-
-			// 发送验证码
-			vcc := new(auth.VerifyCodeController)
-			// 图片验证码，需要加限流
-			authGroup.POST("/verify-codes/captcha", vcc.ShowCaptcha)
-			authGroup.POST("/verify-codes/phone", vcc.SendUsingPhone)
-			authGroup.POST("/verify-codes/email", vcc.SendUsingEmail)
-
+			// 登录
 			lgc := new(auth.LoginController)
-			// 使用手机号，短信验证码进行登录
-			authGroup.POST("/login/using-phone", lgc.LoginByPhone)
-			// 支持手机号，Email 和 用户名
-			authGroup.POST("/login/using-password", lgc.LoginByPassword)
-			authGroup.POST("/login/refresh-token", lgc.RefreshToken)
+			authGroup.POST("/login/using-phone", middlewares.GuestJWT(), lgc.LoginByPhone)
+			authGroup.POST("/login/using-password", middlewares.GuestJWT(), lgc.LoginByPassword)
+			authGroup.POST("/login/refresh-token", middlewares.AuthJWT(), lgc.RefreshToken)
 
 			// 重置密码
 			pc := new(auth.PasswordController)
-			authGroup.POST("/password-reset/using-phone", pc.ResetByPhone)
-			authGroup.POST("/password-reset/using-email", pc.ResetByEmail)
+			authGroup.POST("/password-reset/using-phone", middlewares.GuestJWT(), pc.ResetByPhone)
+			authGroup.POST("/password-reset/using-email", middlewares.GuestJWT(), pc.ResetByEmail)
+
+			// 注册
+			suc := new(auth.SignupController)
+			authGroup.POST("/signup/using-phone", middlewares.GuestJWT(), suc.SignupUsingPhone)
+			authGroup.POST("/signup/using-email", middlewares.GuestJWT(), suc.SignupUsingEmail)
+			authGroup.POST("/signup/phone/exist", middlewares.GuestJWT(), middlewares.LimitPerRoute("60-H"), suc.IsPhoneExist)
+			authGroup.POST("/signup/email/exist", middlewares.GuestJWT(), middlewares.LimitPerRoute("60-H"), suc.IsEmailExist)
+
+			// 发送验证码
+			vcc := new(auth.VerifyCodeController)
+
+			authGroup.POST("/verify-codes/phone", middlewares.LimitPerRoute("20-H"), vcc.SendUsingPhone)
+			authGroup.POST("/verify-codes/email", middlewares.LimitPerRoute("20-H"), vcc.SendUsingEmail)
+
+			// 图片验证码，需要加限流
+			authGroup.POST("/verify-codes/captcha", middlewares.LimitPerRoute("50-H"), vcc.ShowCaptcha)
 		}
 	}
 }
