@@ -12,6 +12,7 @@ require (
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/spf13/cast v1.4.1
+	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/viper v1.10.1
 	github.com/thedevsaddam/govalidator v1.9.10
 	github.com/ulule/limiter/v3 v3.9.0
