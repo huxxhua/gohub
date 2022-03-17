@@ -24,7 +24,6 @@ func Attempt(email string, password string) (user.User, error) {
 
 // LoginByPhone 登录指定用户
 func LoginByPhone(phone string) (user.User, error) {
-
 	userModel := user.GetByPhone(phone)
 	if userModel.ID == 0 {
 		return user.User{}, errors.New("手机号未注册")
