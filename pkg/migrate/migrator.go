@@ -197,3 +197,27 @@ func (m *Migrator) runUpMigration(mfile MigrationFile, batch int) {
 
 	console.ExitIf(err)
 }
+
+// Reset 回滚所有迁移
+func (m *Migrator) Reset() {
+
+	var migrations []Migration
+
+	// 按照倒序读取所有迁移文件
+	m.DB.Order("id DESC").First(&migrations)
+
+	// 回滚所有迁移
+	if !m.rollbackMigrations(migrations) {
+		console.Success("[migrations] table is empty, nothing to reset.")
+	}
+}
+
+// Refresh 回滚所有迁移，并运行所有迁移
+func (m *Migrator) Refresh() {
+
+	// 回滚所有迁移
+	m.Reset()
+
+	// 再次执行所有迁移
+	m.Up()
+}
