@@ -68,7 +68,7 @@ func RegisterAPIRoutes(r *gin.Engine) {
 			usersGroup.GET("", uc.Index)
 		}
 
-		//分类
+		// 分类
 		cgc := new(controllers.CategoriesController)
 		cgcGroup := v1.Group("/categories")
 		{
@@ -76,6 +76,13 @@ func RegisterAPIRoutes(r *gin.Engine) {
 			cgcGroup.POST("", middlewares.AuthJWT(), cgc.Store)
 			cgcGroup.PUT("/:id", middlewares.AuthJWT(), cgc.Update)
 			cgcGroup.DELETE("/:id", middlewares.AuthJWT(), cgc.Delete)
+		}
+
+		// 友情链接
+		lsc := new(controllers.LinksController)
+		linksGroup := v1.Group("/links")
+		{
+			linksGroup.GET("", lsc.Index)
 		}
 	}
 }
