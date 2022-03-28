@@ -103,6 +103,7 @@ func (p *Paginator) initProperties(perPage int, baseURL string) {
 	p.Offset = (p.Page - 1) * p.PerPage
 }
 
+// getPerPage 返回每页条数
 func (p Paginator) getPerPage(perPage int) int {
 	// 优先使用请求 per_page 参数
 	queryPerpage := p.ctx.Query(config.Get("paging.url_query_per_page"))
@@ -178,7 +179,7 @@ func (p Paginator) getPageLink(page int) string {
 	return fmt.Sprintf("%v%v&%s=%s&%s=%s&%s=%v",
 		p.BaseURL,
 		page,
-		config.Get("paging.url_query_url"),
+		config.Get("paging.url_query_sort"),
 		p.Sort,
 		config.Get("paging.url_query_order"),
 		p.Order,

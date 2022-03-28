@@ -19,6 +19,10 @@ func (ctrl *UsersController) CurrentUser(c *gin.Context) {
 
 // Index 所有用户
 func (ctrl *UsersController) Index(ctx *gin.Context) {
-	data := user.All()
-	response.Data(ctx, data)
+	data, pager := user.Paginate(ctx, 10)
+
+	response.JSON(ctx, gin.H{
+		"data":  data,
+		"pager": pager,
+	})
 }

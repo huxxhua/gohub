@@ -100,3 +100,12 @@ func deleteAllMySQLTables() error {
 
 	return nil
 }
+
+func TableName(obj interface{}) string {
+	stmt := &gorm.Statement{DB: DB}
+	err := stmt.Parse(obj)
+	if err != nil {
+		return ""
+	}
+	return stmt.Schema.Table
+}
