@@ -32,7 +32,7 @@ func init() {
 		// 第三个参数，排除 ID
 		var exceptID string
 		if len(rng) > 2 {
-			exceptID = rng[3]
+			exceptID = rng[2]
 		}
 
 		// 用户请求过来的数据

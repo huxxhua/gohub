@@ -12,6 +12,11 @@ type User struct {
 	models.BaseModel
 
 	Name string `json:"name,omitempty"`
+
+	City         string `json:"city,omitempty"`
+	Introduction string `json:"introduction,omitempty"`
+	Avatar       string `json:"avatar,omitempty"`
+
 	// JSON 解析器忽略字段
 	Email    string `json:"-"`
 	Phone    string `json:"-"`

@@ -32,3 +32,22 @@ func (ctrl *UsersController) Index(ctx *gin.Context) {
 		"pager": pager,
 	})
 }
+
+func (ctrl *UsersController) UpdateProfile(ctx *gin.Context) {
+
+	request := requests.UserUpdateProfileRequest{}
+	if ok := requests.Validate(ctx, &request, requests.UserUpdateProfile); !ok {
+		return
+	}
+
+	curUser := auth.CurrentUser(ctx)
+	curUser.Name = request.Name
+	curUser.City = request.City
+	curUser.Introduction = request.Introduction
+	rows := curUser.Save()
+	if rows > 0 {
+		response.Data(ctx, curUser)
+	} else {
+		response.Abort500(ctx, "更新失败，请稍后尝试~")
+	}
+}
