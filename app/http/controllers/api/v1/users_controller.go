@@ -52,7 +52,7 @@ func (ctrl *UsersController) UpdateProfile(ctx *gin.Context) {
 	}
 }
 
-func (ctrl UsersController) UpdateEmail(ctx *gin.Context) {
+func (ctrl *UsersController) UpdateEmail(ctx *gin.Context) {
 
 	request := requests.UserUpdateEmailRequest{}
 	if ok := requests.Validate(ctx, &request, requests.UserUpdateEmail); !ok {
@@ -69,7 +69,7 @@ func (ctrl UsersController) UpdateEmail(ctx *gin.Context) {
 	}
 }
 
-func (ctrl UsersController) UpdatePhone(ctx *gin.Context) {
+func (ctrl *UsersController) UpdatePhone(ctx *gin.Context) {
 
 	request := requests.UserUpdatePhoneRequest{}
 	if ok := requests.Validate(ctx, &request, requests.UserUpdatePhone); !ok {
@@ -83,5 +83,27 @@ func (ctrl UsersController) UpdatePhone(ctx *gin.Context) {
 		response.Data(ctx, curUser)
 	} else {
 		response.Abort500(ctx, "更新失败，请稍后尝试~")
+	}
+}
+
+func (ctrl *UsersController) UpdatePassword(ctx *gin.Context) {
+
+	request := requests.UserUpdatePasswordRequest{}
+	if ok := requests.Validate(ctx, &request, requests.UserUpdatePassword); !ok {
+		return
+	}
+
+	curUser := auth.CurrentUser(ctx)
+	// 验证原始密码是否正确
+	_, err := auth.Attempt(curUser.Name, request.Password)
+	if err != nil {
+		// 失败，显示错误提示
+		response.Unauthorized(ctx, "原密码不正确")
+	} else {
+		// 更新密码为新密码
+		curUser.Password = request.NewPassword
+		curUser.Save()
+
+		response.Success(ctx)
 	}
 }
