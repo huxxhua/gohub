@@ -68,3 +68,20 @@ func (ctrl UsersController) UpdateEmail(ctx *gin.Context) {
 		response.Abort500(ctx, "更新失败，请稍后尝试~")
 	}
 }
+
+func (ctrl UsersController) UpdatePhone(ctx *gin.Context) {
+
+	request := requests.UserUpdatePhoneRequest{}
+	if ok := requests.Validate(ctx, &request, requests.UserUpdatePhone); !ok {
+		return
+	}
+
+	curUser := auth.CurrentUser(ctx)
+	curUser.Phone = request.Phone
+	rows := curUser.Save()
+	if rows > 0 {
+		response.Data(ctx, curUser)
+	} else {
+		response.Abort500(ctx, "更新失败，请稍后尝试~")
+	}
+}
