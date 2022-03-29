@@ -5,6 +5,7 @@ import (
 	"github.com/thedevsaddam/govalidator"
 	"gohub/app/requests/validators"
 	"gohub/pkg/auth"
+	"mime/multipart"
 )
 
 type UserUpdateProfileRequest struct {
@@ -27,6 +28,12 @@ type UserUpdatePasswordRequest struct {
 	Password           string `valid:"password" json:"password,omitempty"`
 	NewPassword        string `valid:"new_password" json:"new_password,omitempty"`
 	NewPasswordConfirm string `valid:"new_password_confirm" json:"new_password_confirm,omitempty"`
+}
+
+type UserUpdateAvatarRequest struct {
+	// *multipart.FileHeader 是 Govalidator 验证文件必须使用的类型 验证文件必须在字段前方加 file: 前缀
+	// form  gin 在调用 c.ShouldBind() 时，从表单请求中读取
+	Avatar *multipart.FileHeader `valid:"avatar" form:"avatar"`
 }
 
 func UserUpdateProfile(data interface{}, c *gin.Context) map[string][]string {
@@ -156,4 +163,25 @@ func UserUpdatePassword(data interface{}, ctx *gin.Context) map[string][]string 
 
 	errs = validators.ValidatePasswordConfirm(_data.NewPassword, _data.NewPasswordConfirm, errs)
 	return errs
+}
+
+func UserUpdateAvatar(data interface{}, ctx *gin.Context) map[string][]string {
+
+	rules := govalidator.MapData{
+		// size 的单位为 bytes
+		// - 1024 bytes 为 1kb
+		// - 1048576 bytes 为 1mb
+		// - 20971520 bytes 为 20mb
+		"file:avatar": []string{"ext:png,jpg,jpeg", "size:20971520", "required"},
+	}
+
+	messages := govalidator.MapData{
+		"file:avatar": []string{
+			"ext:ext头像只能上传 png, jpg, jpeg 任意一种的图片",
+			"size:头像文件最大不能超过 20MB",
+			"required:必须上传图片",
+		},
+	}
+
+	return validateFile(ctx, data, rules, messages)
 }
